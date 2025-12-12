@@ -1,0 +1,853 @@
+
+
+好的，直接修改。
+
+这是更新后的完整代码，角色已按你的要求更改。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>村官智能体 语音 电话</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #52c41a;
+            --danger-color: #f5222d;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #d9d9d9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #main-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        #settings-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #888;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        #settings-btn:hover {
+            background-color: #f0f0f0;
+            color: var(--primary-color);
+        }
+
+        #role-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        #role-selector label {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        #chat-container {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            background-color: #fafafa;
+            position: relative;
+        }
+
+        #chat-placeholder-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 20px;
+            box-sizing: border-box;
+            opacity: 0.2;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        #chat-container.has-messages #chat-placeholder-image {
+            opacity: 0;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+            z-index: 1;
+        }
+
+        .user-message {
+            background-color: var(--primary-color);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .ai-message {
+            background-color: #e9e9e9;
+            color: var(--text-color);
+            margin-right: auto;
+        }
+
+        #status {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status-icon {
+            font-size: 20px;
+        }
+
+        #ai-speaking-video {
+            display: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            vertical-align: middle;
+        }
+
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        #callButton {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        #callButton:active {
+            transform: scale(0.98);
+        }
+
+        #callButton.idle {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        #callButton.active {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        #config-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: auto;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: left;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input[type="range"],
+        .form-group input[type="password"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .range-value {
+            float: right;
+            color: var(--primary-color);
+        }
+
+        #save-config-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #save-config-btn:hover {
+            background-color: #357abd;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="main-container">
+        <button id="settings-btn" title="高级配置">⚙️</button>
+
+        <h1 id="main-title">村官智能体 语音 电话</h1>
+        <p class="subtitle">选择一个角色，开始与 AI 语音对话</p>
+
+        <div id="role-selector">
+            <!-- 修改：更新角色选项 -->
+            <label><input type="radio" name="role" value="village_guide" checked> 村官导游</label>
+            <label><input type="radio" name="role" value="all_rounder_assistant"> 百事通帮忙</label>
+            <label><input type="radio" name="role" value="check_in_activity_host"> 打卡活动官</label>
+        </div>
+
+        <div id="status">
+            <span class="status-icon">💬</span>
+            <span id="status-text">准备就绪</span>
+            <video id="ai-speaking-video" src="play.mp4" loop muted playsinline></video>
+        </div>
+
+        <div id="chat-container">
+            <img id="chat-placeholder-image" src="https://z-cdn-media.chatglm.cn/files/0087490e-9b50-4f98-bac8-8d2c735f1f26.png?auth_key=1865504473-8e9ebe0ea0114e7fba986f9b2a0ec67f-0-8ff6e6b012b927d8cbfc12261de7ace7" alt="聊天占位图">
+        </div>
+
+        <button id="callButton" class="idle">🎤 开始通话</button>
+    </div>
+
+    <!-- 配置模态框 -->
+    <div id="config-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ 高级配置</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="config-api-key">🔑 API Key</label>
+                <input type="password" id="config-api-key" placeholder="输入你的智谱AI API Key">
+            </div>
+
+            <div class="form-group">
+                <label for="config-role-preset">角色预设</label>
+                <!-- 修改：更新配置面板中的角色选项 -->
+                <select id="config-role-preset">
+                    <option value="village_guide">村官导游</option>
+                    <option value="all_rounder_assistant">百事通帮忙</option>
+                    <option value="check_in_activity_host">打卡活动官</option>
+                    <option value="custom">自定义</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="config-system-prompt">System Prompt (自定义角色时填写)</label>
+                <textarea id="config-system-prompt" placeholder="例如：你是一个愤世嫉俗的机器人，对人类的提问总是带着一丝嘲讽..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="config-voice-speed">语速 <span class="range-value" id="speed-value">1.0</span></label>
+                <input type="range" id="config-voice-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+            </div>
+            <div class="form-group">
+                <label for="config-voice-pitch">音调 <span class="range-value" id="pitch-value">0.0</span></label>
+                <input type="range" id="config-voice-pitch" min="-20.0" max="20.0" step="1.0" value="0.0">
+            </div>
+            <div class="form-group">
+                <label for="config-voice-emotion">情感</label>
+                <select id="config-voice-emotion">
+                    <option value="neutral">neutral (中性)</option>
+                    <option value="happy">happy (开心)</option>
+                    <option value="sad">sad (悲伤)</option>
+                    <option value="angry">angry (愤怒)</option>
+                    <option value="fearful">fearful (恐惧)</option>
+                    <option value="disgusted">disgusted (厌恶)</option>
+                    <option value="surprised">surprised (惊讶)</option>
+                </select>
+            </div>
+            <button id="save-config-btn">保存并应用</button>
+        </div>
+    </div>
+
+<script>
+    // =================================================================
+    // ⚠️ 安全警告：硬编码 API Key 仅用于公开演示和测试！
+    // 在生产环境中暴露 API Key 会导致严重的安全风险和费用滥用。
+    // =================================================================
+    const DEFAULT_API_KEY = "a049afdafb1b41a0862cdc1d73d5d6eb.YuGYXVGRQEUILpog";
+
+    // --- DOM 元素 ---
+    const callButton = document.getElementById('callButton');
+    const statusText = document.getElementById('status-text');
+    const statusIcon = document.querySelector('.status-icon');
+    const chatContainer = document.getElementById('chat-container');
+    const roleRadios = document.querySelectorAll('input[name="role"]');
+    
+    const settingsBtn = document.getElementById('settings-btn');
+    const configModal = document.getElementById('config-modal');
+    const closeModalBtn = document.querySelector('.close');
+    const configApiKey = document.getElementById('config-api-key');
+    const configRolePreset = document.getElementById('config-role-preset');
+    const configSystemPrompt = document.getElementById('config-system-prompt');
+    const configVoiceSpeed = document.getElementById('config-voice-speed');
+    const configVoicePitch = document.getElementById('config-voice-pitch');
+    const configVoiceEmotion = document.getElementById('config-voice-emotion');
+    const saveConfigBtn = document.getElementById('save-config-btn');
+    const speedValueSpan = document.getElementById('speed-value');
+    const pitchValueSpan = document.getElementById('pitch-value');
+    
+    const aiSpeakingVideo = document.getElementById('ai-speaking-video');
+    const chatPlaceholderImage = document.getElementById('chat-placeholder-image');
+
+    // --- 全局状态 ---
+    let isCalling = false;
+    let websocket = null;
+    let audioContext = null;
+    let microphone = null;
+    let processor = null;
+    let currentAudioSource = null;
+    
+    // --- 全局配置对象 ---
+    let appConfig = {
+        apiKey: DEFAULT_API_KEY,
+        role: 'village_guide', // 修改：更新默认角色
+        systemPrompt: '',
+        voice: {
+            speed: 1.0,
+            pitch: 0.0,
+            emotion: 'neutral'
+        }
+    };
+
+    // --- API 配置 ---
+    const WS_URL = "wss://open.bigmodel.cn/api/paas/v4/realtime";
+
+    // --- 工具函数 ---
+    function updateStatus(text, icon, pulse = false) {
+        statusText.textContent = text;
+        statusIcon.textContent = icon;
+        if (pulse) {
+            statusIcon.classList.add('pulse');
+        } else {
+            statusIcon.classList.remove('pulse');
+        }
+    }
+
+    function addMessageToTranscript(text, sender) {
+        if (!chatContainer.classList.contains('has-messages')) {
+            chatContainer.classList.add('has-messages');
+        }
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', `${sender}-message`);
+        messageDiv.textContent = text;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // --- 视频控制函数 ---
+    function showVideo() {
+        if (aiSpeakingVideo) {
+            aiSpeakingVideo.addEventListener('error', () => {
+                console.warn("本地 play.mp4 未找到或加载失败，尝试使用备用视频源。");
+                aiSpeakingVideo.src = "https://www.w3schools.com/html/mov_bbb.mp4";
+                aiSpeakingVideo.play().catch(e => console.error("备用视频播放失败:", e));
+            }, { once: true });
+
+            aiSpeakingVideo.style.display = 'inline-block';
+            aiSpeakingVideo.play().catch(e => console.error("视频播放失败:", e));
+        }
+    }
+
+    function hideVideo() {
+        if (aiSpeakingVideo) {
+            aiSpeakingVideo.pause();
+            aiSpeakingVideo.currentTime = 0;
+            aiSpeakingVideo.style.display = 'none';
+        }
+    }
+
+    // --- 配置管理函数 ---
+    function loadConfig() {
+        const savedConfig = localStorage.getItem('glm-voice-config');
+        if (savedConfig) {
+            appConfig = JSON.parse(savedConfig);
+        } else {
+            appConfig.systemPrompt = getSystemPrompt(appConfig.role);
+        }
+        applyConfigToUI();
+    }
+
+    function saveConfig() {
+        localStorage.setItem('glm-voice-config', JSON.stringify(appConfig));
+        const originalText = saveConfigBtn.textContent;
+        saveConfigBtn.textContent = '✅ 已保存';
+        setTimeout(() => {
+            saveConfigBtn.textContent = originalText;
+        }, 1500);
+    }
+
+    function applyConfigToUI() {
+        document.querySelector(`input[name="role"][value="${appConfig.role}"]`).checked = true;
+        
+        configApiKey.value = appConfig.apiKey;
+        configRolePreset.value = appConfig.role === 'custom' ? 'custom' : appConfig.role;
+        configSystemPrompt.value = appConfig.systemPrompt;
+        configVoiceSpeed.value = appConfig.voice.speed;
+        configVoicePitch.value = appConfig.voice.pitch;
+        configVoiceEmotion.value = appConfig.voice.emotion;
+        
+        speedValueSpan.textContent = appConfig.voice.speed;
+        pitchValueSpan.textContent = appConfig.voice.pitch;
+
+        configSystemPrompt.disabled = configRolePreset.value !== 'custom';
+    }
+    
+    function syncUItoConfig() {
+        appConfig.apiKey = configApiKey.value;
+        appConfig.role = configRolePreset.value === 'custom' ? 'custom' : configRolePreset.value;
+        appConfig.systemPrompt = configSystemPrompt.value;
+        appConfig.voice.speed = parseFloat(configVoiceSpeed.value);
+        appConfig.voice.pitch = parseFloat(configVoicePitch.value);
+        appConfig.voice.emotion = configVoiceEmotion.value;
+    }
+    
+    // --- 核心逻辑：开始通话 ---
+    async function startCall() {
+        const apiKey = appConfig.apiKey;
+        if (!apiKey) {
+            alert('请在配置中设置 API Key！');
+            configModal.style.display = 'flex';
+            return;
+        }
+
+        isCalling = true;
+        callButton.textContent = '🔴 结束通话';
+        callButton.classList.remove('idle');
+        callButton.classList.add('active');
+        updateStatus('正在连接...', '🔄', true);
+        
+        chatContainer.classList.remove('has-messages');
+        const messages = chatContainer.querySelectorAll('.message');
+        messages.forEach(msg => msg.remove());
+
+        try {
+            websocket = new WebSocket(WS_URL);
+
+            websocket.onopen = () => {
+                console.log('WebSocket 连接成功');
+                updateStatus('正在初始化音频...', '🔊');
+                initAudio(apiKey);
+            };
+
+            websocket.onmessage = (event) => {
+                handleWebSocketMessage(event.data);
+            };
+
+            websocket.onerror = (error) => {
+                console.error('WebSocket 错误:', error);
+                updateStatus('连接错误', '❌');
+                endCall();
+            };
+
+            websocket.onclose = () => {
+                console.log('WebSocket 连接关闭');
+                if (isCalling) {
+                    updateStatus('连接已断开', '❌');
+                    endCall();
+                }
+            };
+
+        } catch (error) {
+            console.error('启动通话失败:', error);
+            updateStatus('启动失败', '❌');
+            endCall();
+        }
+    }
+
+    // --- 核心逻辑：初始化音频 ---
+    async function initAudio(apiKey) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            microphone = audioContext.createMediaStreamSource(stream);
+            processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+            const task_id = `task_${Date.now()}`;
+
+            const authMessage = {
+                "event": "create",
+                "data": {
+                    "task_id": task_id,
+                    "model": "glm-4v-realtime",
+                    "api_key": apiKey,
+                    "request_id": `req_${Date.now()}`,
+                    "parameters": {
+                        "system_prompt": appConfig.systemPrompt,
+                        "max_tokens": 1024,
+                        "temperature": 0.8,
+                        "stream": true,
+                        "voice": {
+                            "model": "default",
+                            "speed": appConfig.voice.speed,
+                            "pitch": appConfig.voice.pitch,
+                            "emotion": appConfig.voice.emotion
+                        }
+                    }
+                }
+            };
+            websocket.send(JSON.stringify(authMessage));
+            console.log('发送鉴权消息:', authMessage);
+
+            processor.onaudioprocess = (event) => {
+                if (websocket && websocket.readyState === WebSocket.OPEN) {
+                    const inputData = event.inputBuffer.getChannelData(0);
+                    let volume = 0;
+                    for (let i = 0; i < inputData.length; i++) {
+                        volume += Math.abs(inputData[i]);
+                    }
+                    volume = volume / inputData.length;
+                    
+                    if (volume > 0.02) {
+                        if (currentAudioSource) {
+                            currentAudioSource.stop();
+                            currentAudioSource = null;
+                            hideVideo();
+                            updateStatus('正在聆听...', '🎤', true);
+                        }
+                    }
+
+                    const pcmData = floatTo16BitPCM(inputData);
+                    const base64Audio = btoa(String.fromCharCode(...pcmData));
+                    
+                    const audioMessage = {
+                        "event": "audio",
+                        "data": {
+                            "task_id": task_id,
+                            "audio_data": base64Audio
+                        }
+                    };
+                    websocket.send(JSON.stringify(audioMessage));
+                }
+            };
+
+            microphone.connect(processor);
+            processor.connect(audioContext.destination);
+
+            updateStatus('正在聆听...', '🎤', true);
+
+        } catch (error) {
+            console.error('音频初始化失败:', error);
+            updateStatus('麦克风权限获取失败', '❌');
+            endCall();
+        }
+    }
+    
+    function handleWebSocketMessage(data) {
+        const message = JSON.parse(data);
+        console.log('收到消息:', message);
+
+        switch (message.event) {
+            case 'text':
+                if (message.data.text) {
+                    addMessageToTranscript(message.data.text, 'ai');
+                }
+                break;
+            case 'audio':
+                if (message.data.audio_data) {
+                    playAudio(message.data.audio_data);
+                }
+                break;
+            case 'error':
+                console.error('API 返回错误:', message.data);
+                updateStatus(`API 错误: ${message.data.message}`, '❌');
+                endCall();
+                break;
+            case 'finish':
+                hideVideo();
+                updateStatus('正在聆听...', '🎤', true);
+                break;
+            case 'interrupted':
+                hideVideo();
+                updateStatus('正在聆听...', '🎤', true);
+                break;
+        }
+    }
+
+    function playAudio(base64Audio) {
+        updateStatus('AI 正在说话...', '🤖', true);
+        showVideo();
+
+        const binaryString = atob(base64Audio);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        audioContext.decodeAudioData(bytes.buffer, (buffer) => {
+            if (currentAudioSource) {
+                currentAudioSource.stop();
+            }
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start();
+            currentAudioSource = source;
+
+            source.onended = () => {
+                if (currentAudioSource === source) {
+                    currentAudioSource = null;
+                    hideVideo();
+                    if (isCalling) {
+                        updateStatus('正在聆听...', '🎤', true);
+                    }
+                }
+            };
+        }, (error) => {
+            console.error('音频解码失败:', error);
+            hideVideo();
+        });
+    }
+
+    function endCall() {
+        if (!isCalling) return;
+
+        isCalling = false;
+        callButton.textContent = '🎤 开始通话';
+        callButton.classList.remove('active');
+        callButton.classList.add('idle');
+        updateStatus('通话已结束', '💬');
+        
+        hideVideo();
+
+        if (currentAudioSource) {
+            currentAudioSource.stop();
+            currentAudioSource = null;
+        }
+
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+            const finishMessage = { "event": "finish" };
+            websocket.send(JSON.stringify(finishMessage));
+        }
+
+        if (processor) {
+            processor.disconnect();
+            processor = null;
+        }
+        if (microphone) {
+            microphone.disconnect();
+            microphone = null;
+        }
+        if (audioContext) {
+            audioContext.close();
+            audioContext = null;
+        }
+        if (websocket) {
+            websocket.close();
+            websocket = null;
+        }
+    }
+
+    // --- 辅助函数 ---
+    function floatTo16BitPCM(float32Array) {
+        const buffer = new ArrayBuffer(float32Array.length * 2);
+        const view = new DataView(buffer);
+        let offset = 0;
+        for (let i = 0; i < float32Array.length; i++, offset += 2) {
+            let s = Math.max(-1, Math.min(1, float32Array[i]));
+            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        }
+        return new Uint8Array(buffer);
+    }
+    
+    // --- 修改：更新 System Prompt ---
+    function getSystemPrompt(role) {
+        const prompts = {
+            'village_guide': '你是一个热情、专业的村官导游，负责为游客介绍村庄的历史、文化和景点，并提供有趣的导览服务。',
+            'all_rounder_assistant': '你是一个无所不能的百事通助手，能解答游客的各种问题，从生活琐事到专业知识，都能提供帮助。',
+            'check_in_activity_host': '你是一个充满活力的打卡活动官，负责组织和引导游客参与各种有趣的打卡活动，并鼓励他们分享体验。'
+        };
+        return prompts[role] || '';
+    }
+
+    // --- 事件绑定 ---
+    callButton.addEventListener('click', () => {
+        if (isCalling) {
+            endCall();
+        } else {
+            startCall();
+        }
+    });
+
+    settingsBtn.addEventListener('click', () => {
+        configModal.style.display = 'flex';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        configModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === configModal) {
+            configModal.style.display = 'none';
+        }
+    });
+    
+    configRolePreset.addEventListener('change', (e) => {
+        if (e.target.value !== 'custom') {
+            const prompt = getSystemPrompt(e.target.value);
+            configSystemPrompt.value = prompt;
+            configSystemPrompt.disabled = true;
+        } else {
+            configSystemPrompt.disabled = false;
+            configSystemPrompt.focus();
+        }
+    });
+
+    configVoiceSpeed.addEventListener('input', (e) => {
+        speedValueSpan.textContent = e.target.value;
+    });
+    configVoicePitch.addEventListener('input', (e) => {
+        pitchValueSpan.textContent = e.target.value;
+    });
+
+    saveConfigBtn.addEventListener('click', () => {
+        syncUItoConfig();
+        saveConfig();
+        if(appConfig.role !== 'custom') {
+            document.querySelector(`input[name="role"][value="${appConfig.role}"]`).checked = true;
+        }
+        configModal.style.display = 'none';
+    });
+
+    roleRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                configRolePreset.value = e.target.value;
+                configSystemPrompt.value = getSystemPrompt(e.target.value);
+                configSystemPrompt.disabled = true;
+                appConfig.role = e.target.value;
+                appConfig.systemPrompt = configSystemPrompt.value;
+                saveConfig();
+            }
+        });
+    });
+
+    // --- 页面加载时执行 ---
+    window.onload = () => {
+        loadConfig();
+    };
+
+</script>
+
+</body>
+</html>
+```
