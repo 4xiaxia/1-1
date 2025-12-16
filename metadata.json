@@ -1,0 +1,8 @@
+{
+  "name": "Copy of 东里村小萌村官 - 智能导游",
+  "description": "您的可爱AI小伙伴，东里村的百事通，随时为您提供语音导览服务。",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ]
+}
