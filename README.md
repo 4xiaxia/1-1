@@ -19,8 +19,8 @@ View your app in AI Studio: https://ai.studio/apps/drive/1t7LnRhZ38kBe2S2AJXPVJi
 3. Run the app:
    `npm run dev`
 
-## 核心执行原则
+## 核心执行原则 (Core Execution Principle)
 
-These principles guide how we organize maintenance and iterations for this AI Studio app:
+This principle guides how we organize maintenance and iterations for this AI Studio app:
 
 - **总分总治理思想 (General-specific-general governance)**：先全局扫描梳理项目结构与问题脉络，再分模块攻坚修复，最后整合闭环验证整体运行效果。（Begin with a whole-project scan to clarify structure and pain points, tackle fixes module by module, and finish with integrated verification of the end-to-end experience.）
