@@ -21,6 +21,10 @@ View your app in AI Studio: https://ai.studio/apps/drive/1t7LnRhZ38kBe2S2AJXPVJi
 
 ## Core Execution Principle (核心执行原则)
 
-This principle guides how we organize maintenance and iterations for this AI Studio app (用于指导本应用的维护与迭代):
+This principle guides how we organize maintenance and iterations for this AI Studio app (用于指导本应用的维护与迭代): 
 
-- **General-specific-general governance (总分总治理思想)**: Begin with a whole-project scan to clarify structure and pain points. Tackle fixes module by module, and finish with integrated verification of the end-to-end experience (先全局扫描梳理项目结构与问题脉络，再分模块攻坚修复，最后整合闭环验证整体运行效果).
+- **General-specific-general governance (总分总治理思想)**:
+  1. Begin with a whole-project scan to clarify structure and pain points.
+  2. Tackle fixes module by module.
+  3. Finish with integrated verification of the end-to-end experience.
+  (先全局扫描梳理项目结构与问题脉络，再分模块攻坚修复，最后整合闭环验证整体运行效果)
