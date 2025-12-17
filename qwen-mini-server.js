@@ -4,10 +4,19 @@ const cors = require('cors');
 const axios = require('axios');
 const app = express();
 
-// 1. 基础配置 (小白只改这2处！)
-// 夏夏提供的新 Key
-const DASHSCOPE_API_KEY = 'sk-0ecae1777d2240ea88064fa3a5a645b3'; 
-const PORT = 3001;
+// 1. 基础配置 - 从环境变量读取
+// Configuration - Read from environment variables
+const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY; 
+const PORT = process.env.PORT || 3001;
+
+// 检查 API Key
+if (!DASHSCOPE_API_KEY) {
+  console.error('❌ 错误：未设置 DASHSCOPE_API_KEY 环境变量');
+  console.error('❌ Error: DASHSCOPE_API_KEY environment variable not set');
+  console.error('请通过命令行传递：DASHSCOPE_API_KEY=your_key node qwen-mini-server.js');
+  console.error('Please pass via command line: DASHSCOPE_API_KEY=your_key node qwen-mini-server.js');
+  process.exit(1);
+}
 
 // 2. 跨域+解析JSON (小白别改)
 // 允许来自前端的 localhost:3000 或其他地址的请求

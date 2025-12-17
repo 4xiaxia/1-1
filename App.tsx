@@ -5,7 +5,7 @@ import { QwenService } from './services/qwenService'; // New Service
 import { AgentState, ChatMessage } from './types';
 import AgentAvatar from './components/AgentAvatar';
 import { GoogleGenAI } from '@google/genai';
-import { CONFIG, getNextApiKey } from './config';
+import { CONFIG } from './config';
 
 // --- Data Constants ---
 const SPOT_DATA = {
@@ -471,14 +471,14 @@ const App: React.FC = () => {
       }
 
       try {
-          const apiKey = getNextApiKey();
-          if (!apiKey) throw new Error("No API Key");
+          const apiKey = CONFIG.API_KEY;
+          if (!apiKey) throw new Error("VITE_API_KEY not configured. Please set it in .env.local");
 
-          // Always create new client to ensure key rotation if needed
-          const options: any = { apiKey: apiKey };
-          if (CONFIG.API_BASE_URL) {
-              options.baseUrl = CONFIG.API_BASE_URL;
-          }
+          // Create client with Shengsuanyun proxy
+          const options: any = { 
+              apiKey: apiKey,
+              baseUrl: CONFIG.API_BASE_URL
+          };
           
           const ai = new GoogleGenAI(options);
           textChatClient.current = ai.chats.create({

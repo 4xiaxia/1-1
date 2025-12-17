@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { createBlobFromFloat32, decodeAudioData, base64ToUint8Array, downsampleBuffer } from '../utils/audioUtils';
-import { CONFIG, getNextApiKey } from '../config';
+import { CONFIG } from '../config';
 
 interface LiveServiceCallbacks {
   onOpen: () => void;
@@ -25,18 +25,17 @@ export class LiveService {
   private isSocketOpen: boolean = false; // New flag to track actual WebSocket state
   
   constructor() {
-    // Get a fresh key from rotation logic
-    const apiKey = getNextApiKey();
+    // Use Shengsuanyun API key from environment
+    const apiKey = CONFIG.API_KEY;
     if (!apiKey) {
-        throw new Error("No API_KEY available");
+        throw new Error("VITE_API_KEY not found. Please set it in your environment variables.");
     }
     
-    const options: any = { apiKey: apiKey };
+    const options: any = { 
+      apiKey: apiKey,
+      baseUrl: CONFIG.API_BASE_URL // Always use Shengsuanyun proxy
+    };
     
-    // Config logic handles undefined check, but we double check here to be safe
-    if (CONFIG.API_BASE_URL && CONFIG.API_BASE_URL.startsWith('http')) {
-      options.baseUrl = CONFIG.API_BASE_URL;
-    }
     this.ai = new GoogleGenAI(options);
   }
 
