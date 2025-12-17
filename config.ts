@@ -1,54 +1,47 @@
 
 // Unified Configuration File
 
-// API Key Rotation Logic
-const API_KEYS = [
-    'AIzaSyDvClOJ3ger7dybQ6fQUUvpq0iLOGwsrX4', // Main Route
-    'AIzaSyB-SKkJ78FaRf3J_VIGkT0ZvrskTYTuv-s', // Backup Route
-];
-
-// Safely access process.env.API_KEY
-const envApiKey = process.env.API_KEY;
-if (envApiKey && !API_KEYS.includes(envApiKey)) {
-    API_KEYS.push(envApiKey);
-}
-
-let keyIndex = 0;
-
-export const getNextApiKey = (): string => {
-    if (API_KEYS.length === 0) return '';
-    const key = API_KEYS[keyIndex];
-    // Rotate index for next call (Round Robin)
-    keyIndex = (keyIndex + 1) % API_KEYS.length;
-    console.log(`[Config] Using API Key index: ${keyIndex} (Rotation)`);
-    return key;
+// Get API key from environment variable (Shengsuanyun API key)
+const getApiKey = (): string => {
+  const apiKey = import.meta.env.VITE_API_KEY;
+  if (!apiKey) {
+    console.warn('[Config] VITE_API_KEY not found in environment variables');
+  }
+  return apiKey || '';
 };
 
-// Safely handle API_BASE_URL
-const envBaseUrl = process.env.API_BASE_URL;
-// Ensure we don't pass the string "undefined" or empty strings
-const cleanBaseUrl = (envBaseUrl && envBaseUrl !== "undefined" && envBaseUrl !== "") ? envBaseUrl : undefined;
+// Get API Base URL (Shengsuanyun proxy)
+const getApiBaseUrl = (): string => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  return baseUrl || 'https://router.shengsuanyun.com/api';
+};
+
+// Get Qwen Backend URL
+const getQwenBackendUrl = (): string => {
+  const qwenUrl = import.meta.env.VITE_QWEN_BACKEND_URL;
+  return qwenUrl || 'http://localhost:3001/api/qwen-mini';
+};
 
 export const CONFIG = {
-  // Config exports getNextApiKey function instead of a single static key
-  getNextApiKey,
+  // API Key for Shengsuanyun proxy (from environment variable)
+  API_KEY: getApiKey(),
   
-  // API Base URL
-  API_BASE_URL: cleanBaseUrl,
+  // API Base URL (Shengsuanyun proxy)
+  API_BASE_URL: getApiBaseUrl(),
 
   // Qwen Backup Route Config
   QWEN: {
-      BACKEND_URL: 'http://localhost:3001/api/qwen-mini'
+      BACKEND_URL: getQwenBackendUrl()
   },
 
-  // Model Versions
+  // Model Versions (with google/ prefix for Shengsuanyun compatibility)
   MODELS: {
     // Model for Live API (WebSocket real-time audio)
-    LIVE: 'gemini-2.5-flash-native-audio-preview-09-2025', 
+    LIVE: 'google/gemini-2.5-flash-native-audio-preview-09-2025', 
     
     // Model for Text Chat Fallback
     // Using the stable flash model for text generation
-    TEXT: 'gemini-2.5-flash',     
+    TEXT: 'google/gemini-2.5-flash',     
   },
 
   // Voice Configuration
