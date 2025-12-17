@@ -16,6 +16,7 @@ else
 fi
 
 # 2. Check Gemini API (if API key is set)
+# Note: VITE_API_KEY is preferred for Vite builds, GEMINI_API_KEY is legacy support
 echo "2️⃣ 检查Gemini API..."
 if [ -n "$VITE_API_KEY" ] || [ -n "$GEMINI_API_KEY" ]; then
   API_KEY="${VITE_API_KEY:-$GEMINI_API_KEY}"

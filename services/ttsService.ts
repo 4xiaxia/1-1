@@ -96,14 +96,16 @@ export class TTSService {
       const data = await response.json();
 
       if (data.status === 'completed') {
-        // The output might contain a URL or base64 audio data
+        // Shengsuanyun API returns audio in one of these formats:
+        // 1. audio_url: Direct URL to download the generated audio file
+        // 2. audio_data: Base64-encoded audio data embedded in response
         if (data.output?.audio_url) {
           return {
             audioUrl: data.output.audio_url,
             duration: data.output?.duration,
           };
         } else if (data.output?.audio_data) {
-          // If base64 encoded audio data is returned
+          // Base64 encoded audio data format
           const audioData = this.base64ToUint8Array(data.output.audio_data);
           return {
             audioData,

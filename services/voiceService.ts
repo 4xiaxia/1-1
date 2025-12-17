@@ -214,8 +214,12 @@ export class VoiceService {
           this.callbacks?.onTranscription('user', transcription.text);
           this.callbacks?.onMessage?.('正在生成语音回复...');
 
-          // TODO: Get AI response here (would need to integrate with text generation)
-          // For now, just show we received the transcription
+          // Note: Full integration with text generation and TTS would require:
+          // 1. Send transcription.text to Gemini text API for response
+          // 2. Use TTSService to convert response to speech
+          // 3. Play the audio response
+          // For now, this marks the end of the transcription phase.
+          // The app can handle AI response generation separately via text chat fallback.
           this.callbacks?.onModeChange(VoiceMode.IDLE);
           
           resolve();
