@@ -28,7 +28,7 @@ export class LiveService {
     // Use Shengsuanyun API key from environment
     const apiKey = CONFIG.API_KEY;
     if (!apiKey) {
-        throw new Error("VITE_API_KEY not found. Please set it in .env.local file.");
+        throw new Error("VITE_API_KEY not found. Please set it in your environment variables.");
     }
     
     const options: any = { 

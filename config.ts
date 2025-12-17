@@ -5,7 +5,7 @@
 const getApiKey = (): string => {
   const apiKey = import.meta.env.VITE_API_KEY;
   if (!apiKey) {
-    console.warn('[Config] VITE_API_KEY not found in environment variables');
+    console.error('[Config] VITE_API_KEY not found in environment variables. Please set it in your .env file.');
   }
   return apiKey || '';
 };
