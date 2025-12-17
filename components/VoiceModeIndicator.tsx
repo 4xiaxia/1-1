@@ -89,7 +89,7 @@ const VoiceModeIndicator: React.FC<VoiceModeIndicatorProps> = ({
       role="status"
       aria-live="polite"
     >
-      <div className="glass-panel px-4 py-2 rounded-full shadow-lg flex items-center gap-2 backdrop-blur-xl bg-white/90 border border-white/60">
+      <div className="px-4 py-2 rounded-full shadow-lg flex items-center gap-2 backdrop-blur-xl bg-white/90 border border-white/60">
         <i className={`fas ${indicator.icon} ${indicator.color}`} aria-hidden="true"></i>
         <span className={`text-sm font-medium ${indicator.color}`}>
           {indicator.text}

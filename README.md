@@ -17,7 +17,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1t7LnRhZ38kBe2S2AJXPVJi
   - 纯文本模式：最后备选方案
   
 - 🎯 **智能降级策略**：自动检测服务可用性，无缝切换到备用方案
-- ⌨️ **键盘快捷键**：Space 启动对话，Escape 停止对话
+- ⌨️ **键盘快捷键**：Ctrl+Space 启动对话，Escape 停止对话
 - 📱 **响应式设计**：支持手机、平板、桌面多种设备
 - ♿ **无障碍支持**：ARIA 标签和键盘导航
 
@@ -161,7 +161,7 @@ bash scripts/health-check.sh
 
 ### 键盘快捷键
 
-- **Space**: 空闲状态下启动语音对话
+- **Ctrl+Space**: 空闲状态下启动语音对话（避免与页面滚动冲突）
 - **Escape**: 停止当前对话或关闭文本输入框
 
 ### 语音模式切换

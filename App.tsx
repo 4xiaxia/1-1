@@ -155,8 +155,8 @@ const App: React.FC = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // Space key - start conversation when idle
-      if (e.code === 'Space' && voiceMode === VoiceMode.IDLE && !isCallActive) {
+      // Ctrl+Space - start conversation when idle (avoid interference with page scrolling)
+      if (e.code === 'Space' && e.ctrlKey && voiceMode === VoiceMode.IDLE && !isCallActive) {
         // Only if not in text input mode
         const activeElement = document.activeElement;
         const isInputFocused = activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA';

@@ -38,7 +38,7 @@ export const CONFIG = {
 
   // Shengsuanyun API Configuration (for Whisper + TTS)
   SHENGSUANYUN: {
-    API_KEY: import.meta.env.VITE_SHENGSUANYUN_API_KEY || 'GoVWdyVS93_9_fN4kkUTVeQKJNZwu_hzfngNuq7Nqs2Sw_CSrPDL04lewmwJN1jqPUDmZIbaAx-JnbUHZvUvpANlJC3Q0HoEAg6e2w',
+    API_KEY: import.meta.env.VITE_SHENGSUANYUN_API_KEY || '',
     BASE_URL: import.meta.env.VITE_SHENGSUANYUN_BASE_URL || 'https://router.shengsuanyun.com/api',
     MODELS: {
       LIVE: 'google/gemini-2.5-flash-native-audio-preview-09-2025',
