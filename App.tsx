@@ -2,8 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LiveService } from './services/liveService';
 import { QwenService } from './services/qwenService'; // New Service
+import { VoiceMode } from './services/voiceService';
 import { AgentState, ChatMessage } from './types';
 import AgentAvatar from './components/AgentAvatar';
+import Toast, { ToastType } from './components/Toast';
+import VoiceModeIndicator from './components/VoiceModeIndicator';
 import { GoogleGenAI } from '@google/genai';
 import { CONFIG, getNextApiKey } from './config';
 
@@ -108,6 +111,8 @@ const App: React.FC = () => {
   const [agentState, setAgentState] = useState<AgentState>(AgentState.IDLE);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<ToastType>('info');
+  const [voiceMode, setVoiceMode] = useState<VoiceMode>(VoiceMode.IDLE);
 
   // Navigation States
   const [currentView, setCurrentView] = useState<'dashboard' | 'map' | 'detail' | 'media'>('dashboard');
@@ -145,13 +150,33 @@ const App: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, showHistory]);
 
-  // Toast Timer
+  // Toast Timer (now handled by Toast component itself)
+  
+  // Keyboard shortcuts
   useEffect(() => {
-    if (toastMessage) {
-      const timer = setTimeout(() => setToastMessage(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toastMessage]);
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Space key - start conversation when idle
+      if (e.code === 'Space' && voiceMode === VoiceMode.IDLE && !isCallActive) {
+        // Only if not in text input mode
+        const activeElement = document.activeElement;
+        const isInputFocused = activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA';
+        
+        if (!isInputFocused) {
+          e.preventDefault();
+          handleVoiceButtonClick();
+        }
+      }
+      // Escape key - stop conversation
+      else if (e.code === 'Escape' && (isCallActive || voiceMode !== VoiceMode.IDLE)) {
+        e.preventDefault();
+        endCall();
+        setInputMode('none'); // Also close text input if open
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [voiceMode, isCallActive, inputMode]);
 
   // Dragging Logic
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, item: 'avatar' | 'controls') => {
@@ -202,10 +227,15 @@ const App: React.FC = () => {
   }, [avatarPos, controlsPos]);
 
   // --- Route Switch Logic ---
+  const showToast = (message: string, type: ToastType = 'info') => {
+    setToastMessage(message);
+    setToastType(type);
+  };
+
   const toggleRoute = () => {
       const newRoute = route === 'G' ? 'Q' : 'G';
       setRoute(newRoute);
-      setToastMessage(`已切换至 ${newRoute === 'G' ? 'G路线 (Gemini)' : 'Q路线 (Qwen)'} ⚡️`);
+      showToast(`已切换至 ${newRoute === 'G' ? 'G路线 (Gemini)' : 'Q路线 (Qwen)'} ⚡️`, 'info');
       // Reset states
       if (isCallActive) endCall();
       reconnectAttempts.current = 0;
@@ -259,17 +289,19 @@ const App: React.FC = () => {
     if (hasMic) {
         await startGeminiCall();
     } else {
-        setToastMessage("麦克风不可用，已为您切换到文字模式 ⌨️");
+        showToast("麦克风不可用，已为您切换到文字模式 ⌨️", 'warning');
         setInputMode('text');
         setAgentState(AgentState.IDLE);
+        setVoiceMode(VoiceMode.TEXT_MODE);
     }
   };
 
   // --- GEMINI HANDLER ---
   const startGeminiCall = async (isRetry = false) => {
-    setIsConnecting(true); 
+    setIsConnecting(true);
+    setVoiceMode(VoiceMode.LIVE_CONNECTING);
     if (isRetry) {
-        setToastMessage(`正在尝试重连 (${reconnectAttempts.current}/3)...`);
+        showToast(`正在尝试重连 (${reconnectAttempts.current}/3)...`, 'info');
     }
 
     try {
@@ -285,24 +317,27 @@ const App: React.FC = () => {
             setIsConnecting(false);
             setIsCallActive(true);
             setAgentState(AgentState.LISTENING);
+            setVoiceMode(VoiceMode.LIVE_ACTIVE);
             reconnectAttempts.current = 0; 
             if (!isRetry) {
                 addMessage('model', '哇！终于见到你啦！我是东里村的小萌，今天想去哪里玩呀？✨');
-                setToastMessage("小萌听得到哦，快说话吧！🎤");
+                showToast("小萌听得到哦，快说话吧！🎤", 'success');
             } else {
-                setToastMessage("重连成功！我们继续聊~");
+                showToast("重连成功！我们继续聊~", 'success');
             }
             },
             onClose: () => {
             setAgentState(AgentState.IDLE);
             setIsCallActive(false);
             setIsConnecting(false);
+            setVoiceMode(VoiceMode.IDLE);
             },
             onError: (err) => {
             console.error(err);
             setIsCallActive(false);
             setAgentState(AgentState.IDLE);
             setIsConnecting(false);
+            setVoiceMode(VoiceMode.ERROR);
             
             // Retry Logic for Network Errors
             if (reconnectAttempts.current < 3 && !err.message.includes("Microphone")) {
@@ -311,14 +346,17 @@ const App: React.FC = () => {
                 setTimeout(() => startGeminiCall(true), 1000); 
             } else if (reconnectAttempts.current >= 3) {
                  // Auto Switch to Q Route
-                 setToastMessage("G路线繁忙，自动切换至Q备用路线 🚀");
+                 showToast("G路线繁忙，自动切换至Q备用路线 🚀", 'warning');
                  setRoute('Q');
                  reconnectAttempts.current = 0;
+                 setVoiceMode(VoiceMode.IDLE);
             } else if (err.message.includes("Microphone")) {
-                setToastMessage("麦克风连接中断，切换文字模式");
+                showToast("麦克风连接中断，切换文字模式", 'error');
                 setInputMode('text');
+                setVoiceMode(VoiceMode.TEXT_MODE);
             } else {
-                setToastMessage("网络不稳定，请稍后再试");
+                showToast("网络不稳定，请稍后再试", 'error');
+                setTimeout(() => setVoiceMode(VoiceMode.IDLE), 2000);
             }
             },
             onTranscription: (role, text) => {
@@ -371,13 +409,15 @@ const App: React.FC = () => {
       try {
           setIsCallActive(true); // Treat as "Active" (Recording)
           setAgentState(AgentState.LISTENING);
+          setVoiceMode(VoiceMode.QWEN_RECORDING);
           qwenService.current = new QwenService();
           await qwenService.current.startRecording({
-              onOpen: () => setToastMessage("正在录音... 点击结束并发送 📤"),
+              onOpen: () => showToast("正在录音... 点击结束并发送 📤", 'info'),
               onClose: () => {
                   setIsCallActive(false);
                   setIsProcessingQwen(false);
                   setAgentState(AgentState.IDLE);
+                  setVoiceMode(VoiceMode.IDLE);
               },
               onAudioData: (buffer) => {
                  setAgentState(AgentState.SPEAKING);
@@ -393,15 +433,19 @@ const App: React.FC = () => {
               },
               onError: (err) => {
                   console.error("Qwen Error", err);
-                  setToastMessage("Q路线连接失败，请检查后端服务是否开启");
+                  showToast("Q路线连接失败，请检查后端服务是否开启", 'error');
                   setIsCallActive(false);
                   setIsProcessingQwen(false);
                   setAgentState(AgentState.IDLE);
+                  setVoiceMode(VoiceMode.ERROR);
+                  setTimeout(() => setVoiceMode(VoiceMode.IDLE), 2000);
               }
           });
       } catch (e) {
-          setToastMessage("无法启动录音");
+          showToast("无法启动录音", 'error');
           setIsCallActive(false);
+          setVoiceMode(VoiceMode.ERROR);
+          setTimeout(() => setVoiceMode(VoiceMode.IDLE), 2000);
       }
   };
 
@@ -410,12 +454,14 @@ const App: React.FC = () => {
       setIsCallActive(false); // Stop UI recording state
       setIsProcessingQwen(true); // Start processing state
       setAgentState(AgentState.THINKING);
-      setToastMessage("小萌思考中... 🧠");
+      setVoiceMode(VoiceMode.QWEN_PROCESSING);
+      showToast("小萌思考中... 🧠", 'info');
       qwenService.current.stopAndSend({
           onOpen: () => {},
           onClose: () => {
               setIsProcessingQwen(false);
               setAgentState(AgentState.IDLE);
+              setVoiceMode(VoiceMode.IDLE);
           },
           onAudioData: (buffer) => {
               setAgentState(AgentState.SPEAKING);
@@ -431,9 +477,11 @@ const App: React.FC = () => {
           },
           onError: (err) => {
                console.error("Qwen Send Error", err);
-               setToastMessage("发送失败，请检查 qwen-mini-server.js 是否运行");
+               showToast("发送失败，请检查 qwen-mini-server.js 是否运行", 'error');
                setIsProcessingQwen(false);
                setAgentState(AgentState.IDLE);
+               setVoiceMode(VoiceMode.ERROR);
+               setTimeout(() => setVoiceMode(VoiceMode.IDLE), 2000);
           }
       });
   };
@@ -448,6 +496,7 @@ const App: React.FC = () => {
     setIsConnecting(false);
     setIsProcessingQwen(false);
     setAgentState(AgentState.IDLE);
+    setVoiceMode(VoiceMode.IDLE);
   };
 
   const addMessage = (role: 'user' | 'model', text: string) => {
@@ -1006,12 +1055,17 @@ const App: React.FC = () => {
           </div>
       </div>
 
+      {/* --- Voice Mode Indicator --- */}
+      <VoiceModeIndicator mode={voiceMode} />
+
       {/* --- Toast Notification --- */}
       {toastMessage && (
-          <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-[80] bg-black/70 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-xl animate-slide-up flex items-center gap-2">
-              <i className="fas fa-info-circle text-yellow-400"></i>
-              <span className="font-bold text-sm tracking-wide">{toastMessage}</span>
-          </div>
+          <Toast 
+            message={toastMessage} 
+            type={toastType} 
+            duration={3000}
+            onClose={() => setToastMessage(null)}
+          />
       )}
 
       {/* --- Text Input Overlay --- */}

@@ -36,9 +36,21 @@ export const CONFIG = {
   // API Base URL
   API_BASE_URL: cleanBaseUrl,
 
+  // Shengsuanyun API Configuration (for Whisper + TTS)
+  SHENGSUANYUN: {
+    API_KEY: import.meta.env.VITE_SHENGSUANYUN_API_KEY || 'GoVWdyVS93_9_fN4kkUTVeQKJNZwu_hzfngNuq7Nqs2Sw_CSrPDL04lewmwJN1jqPUDmZIbaAx-JnbUHZvUvpANlJC3Q0HoEAg6e2w',
+    BASE_URL: import.meta.env.VITE_SHENGSUANYUN_BASE_URL || 'https://router.shengsuanyun.com/api',
+    MODELS: {
+      LIVE: 'google/gemini-2.5-flash-native-audio-preview-09-2025',
+      WHISPER: 'whisper-1',
+      TTS: 'runway/eleven_multilingual_v2',
+    },
+    TTS_VOICE: 'Clyde', // Cute female voice for Xiao Meng persona
+  },
+
   // Qwen Backup Route Config
   QWEN: {
-      BACKEND_URL: 'http://localhost:3001/api/qwen-mini'
+      BACKEND_URL: import.meta.env.VITE_QWEN_BACKEND_URL || 'http://localhost:3001/api/qwen-mini'
   },
 
   // Model Versions
