@@ -41,12 +41,12 @@ export class LiveService {
   }
 
   async connect(callbacks: LiveServiceCallbacks) {
-    // 1. Initialize Audio Contexts
+    // 1. Initialize Audio Contexts with configured sample rates
     try {
-        // Attempt to create 16kHz context for input, but browser might override
+        // Use configured sample rates for input/output audio
         const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        this.inputAudioContext = new AudioContextClass({ sampleRate: 16000 });
-        this.outputAudioContext = new AudioContextClass({ sampleRate: 24000 });
+        this.inputAudioContext = new AudioContextClass({ sampleRate: CONFIG.AUDIO.INPUT_SAMPLE_RATE });
+        this.outputAudioContext = new AudioContextClass({ sampleRate: CONFIG.AUDIO.OUTPUT_SAMPLE_RATE });
         
         // Resume contexts immediately to bypass autoplay policies
         await Promise.all([
@@ -207,16 +207,16 @@ export class LiveService {
 
             const inputData = e.inputBuffer.getChannelData(0);
             
-            // Critical: Handle sample rate mismatch
-            const actualSampleRate = this.inputAudioContext?.sampleRate || 16000;
+            // Critical: Handle sample rate mismatch - downsample to configured input rate
+            const actualSampleRate = this.inputAudioContext?.sampleRate || CONFIG.AUDIO.INPUT_SAMPLE_RATE;
             let processingData = inputData;
             
-            if (actualSampleRate !== 16000) {
-                processingData = downsampleBuffer(inputData, actualSampleRate, 16000);
+            if (actualSampleRate !== CONFIG.AUDIO.INPUT_SAMPLE_RATE) {
+                processingData = downsampleBuffer(inputData, actualSampleRate, CONFIG.AUDIO.INPUT_SAMPLE_RATE);
             }
 
-            // Convert to 16kHz PCM 16-bit
-            const pcmBlob = createBlobFromFloat32(processingData, 16000);
+            // Convert to configured sample rate PCM 16-bit (WAV compatible format)
+            const pcmBlob = createBlobFromFloat32(processingData, CONFIG.AUDIO.INPUT_SAMPLE_RATE);
             
             this.sessionPromise.then((session) => {
                 // Double check connection state inside the promise resolution

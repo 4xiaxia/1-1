@@ -27,13 +27,16 @@ export const getNextApiKey = (): string => {
 // Safely handle API_BASE_URL
 const envBaseUrl = process.env.API_BASE_URL;
 // Ensure we don't pass the string "undefined" or empty strings
-const cleanBaseUrl = (envBaseUrl && envBaseUrl !== "undefined" && envBaseUrl !== "") ? envBaseUrl : undefined;
+// Default to Shengsuanyun (胜算云) API proxy if not specified
+const cleanBaseUrl = (envBaseUrl && envBaseUrl !== "undefined" && envBaseUrl !== "") 
+    ? envBaseUrl 
+    : 'https://router.shengsuanyun.com/api';
 
 export const CONFIG = {
   // Config exports getNextApiKey function instead of a single static key
   getNextApiKey,
   
-  // API Base URL
+  // API Base URL - Default: Shengsuanyun (胜算云) API Router
   API_BASE_URL: cleanBaseUrl,
 
   // Qwen Backup Route Config
@@ -44,11 +47,24 @@ export const CONFIG = {
   // Model Versions
   MODELS: {
     // Model for Live API (WebSocket real-time audio)
-    LIVE: 'gemini-2.5-flash-native-audio-preview-09-2025', 
+    // Using Shengsuanyun model name format: google/gemini-2.5-flash-live
+    LIVE: 'google/gemini-2.5-flash-live', 
     
     // Model for Text Chat Fallback
     // Using the stable flash model for text generation
-    TEXT: 'gemini-2.5-flash',     
+    TEXT: 'google/gemini-2.5-flash',     
+  },
+  
+  // Audio Configuration
+  AUDIO: {
+    // Input audio: 16kHz, 16-bit PCM mono (WAV format compatible)
+    INPUT_SAMPLE_RATE: 16000,
+    // Output audio: 24kHz, 16-bit PCM mono (WAV format compatible) 
+    OUTPUT_SAMPLE_RATE: 24000,
+    // Number of audio channels
+    CHANNELS: 1,
+    // Bits per sample
+    BITS_PER_SAMPLE: 16,
   },
 
   // Voice Configuration
