@@ -21,6 +21,18 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
+/**
+ * Decode raw PCM audio data to AudioBuffer
+ * 
+ * Audio Format Specifications (Shengsuanyun/胜算云 compatible):
+ * - Input: 16kHz, 16-bit PCM, mono (WAV format compatible)
+ * - Output: 24kHz, 16-bit PCM, mono (WAV format compatible)
+ * 
+ * @param data - Raw PCM 16-bit little-endian audio data
+ * @param ctx - AudioContext for decoding
+ * @param sampleRate - Sample rate of the audio (default: 24000 for output)
+ * @param numChannels - Number of audio channels (default: 1 for mono)
+ */
 export async function decodeAudioData(
   data: Uint8Array,
   ctx: AudioContext,
@@ -74,6 +86,16 @@ export function downsampleBuffer(buffer: Float32Array, inputRate: number, output
   return result;
 }
 
+/**
+ * Create a Blob object for sending audio to Gemini Live API
+ * 
+ * Audio Format: 16kHz, 16-bit PCM (Shengsuanyun/胜算云 compatible)
+ * MIME Type: audio/pcm;rate=16000
+ * 
+ * @param data - Float32 audio samples
+ * @param sampleRate - Sample rate (default: 16000)
+ * @returns Blob object with PCM data and MIME type
+ */
 export function createBlobFromFloat32(data: Float32Array, sampleRate: number): Blob {
     const int16 = float32ToPCM16(data);
     const base64 = arrayBufferToBase64(int16.buffer);
@@ -84,6 +106,7 @@ export function createBlobFromFloat32(data: Float32Array, sampleRate: number): B
 }
 
 // --- WAV Encoding Helpers for Qwen Route ---
+// WAV Format: 16kHz, 16-bit PCM, mono (Shengsuanyun/胜算云 compatible)
 
 function writeString(view: DataView, offset: number, string: string) {
   for (let i = 0; i < string.length; i++) {
@@ -91,6 +114,18 @@ function writeString(view: DataView, offset: number, string: string) {
   }
 }
 
+/**
+ * Encode Float32 audio samples to WAV format
+ * 
+ * WAV specifications for compatibility:
+ * - Sample Rate: 16kHz (default, compatible with INPUT_AUDIO format)
+ * - Bit Depth: 16-bit PCM
+ * - Channels: 1 (mono)
+ * 
+ * @param samples - Float32 audio samples in range [-1.0, 1.0]
+ * @param sampleRate - Sample rate (default: 16000 for 16kHz)
+ * @returns WAV file as ArrayBuffer
+ */
 export function encodeWAV(samples: Float32Array, sampleRate: number = 16000): ArrayBuffer {
   const buffer = new ArrayBuffer(44 + samples.length * 2);
   const view = new DataView(buffer);
