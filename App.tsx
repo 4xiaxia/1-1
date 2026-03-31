@@ -36,55 +36,7 @@ const SPOT_DATA = {
         { id: 'n4', name: '千年古榕', promo: '独木成林 岁月见证', desc: '千年古榕树，独木成林，见证了村庄的沧桑巨变。', x: 30, y: 80, detailImage: 'https://picsum.photos/seed/n4/600/400' },
     ]
   },
-  people: {
-    title: '东里名人',
-    subtitle: '人文荟萃',
-    color: 'purple',
-    bg: 'bg-purple-500',
-    text: 'text-purple-600',
-    lightBg: 'bg-purple-50',
-    spots: [
-        { 
-            id: 'p1', 
-            name: '革命先辈', 
-            promo: '缅怀先烈 浩气长存', 
-            desc: '追忆为国家独立、民族解放奋斗牺牲的英雄人物，传承红色基因。', 
-            x: 45, y: 35, 
-            detailImage: 'https://picsum.photos/seed/p1/600/400',
-            directory: [
-                { name: '郑玉指', tag: '同盟会会员', desc: '辛亥革命华侨领袖，追随孙中山先生，倾家荡产资助革命。其故居位于东里中路76号，现为县级文物保护单位。' },
-                { name: '颜子俊', tag: '爱国侨领', desc: '著名爱国华侨领袖，抗战期间积极组织海外华侨捐资捐物，支持祖国抗战。' },
-                { name: '郑义', tag: '红军烈士', desc: '1930年参加红军，在反围剿战斗中英勇牺牲，年仅22岁。' }
-            ]
-        },
-        { 
-            id: 'p2', 
-            name: '乡贤名人', 
-            promo: '德高望重 造福桑梓', 
-            desc: '介绍德高望重，热心公益，造福桑梓的杰出乡贤事迹。', 
-            x: 75, y: 60, 
-            detailImage: 'https://picsum.photos/seed/p2/600/400',
-            directory: [
-                { name: '郑老先生', tag: '慈善家', desc: '改革开放初期捐资百万修建东里小学教学楼，设立"东里奖学金"，资助贫困学生数百人。' },
-                { name: '李教授', tag: '文化学者', desc: '致力于整理东里村族谱与地方志，编撰《东里村史》，为传承村落文化做出巨大贡献。' },
-                { name: '张医师', tag: '名医', desc: '悬壶济世五十年，医术精湛，医德高尚，免费为村里老人义诊。' }
-            ]
-        },
-        { 
-            id: 'p3', 
-            name: '青年后生', 
-            promo: '朝气蓬勃 未来可期', 
-            desc: '展现朝气蓬勃，在各行各业崭露头角，建设家乡的新生代力量。', 
-            x: 20, y: 70, 
-            detailImage: 'https://picsum.photos/seed/p3/600/400',
-            directory: [
-                { name: '2024届 郑晓明', tag: '清华大学', desc: '以优异成绩考入清华大学计算机系，是东里村近十年来第一位考入清北的学生。' },
-                { name: '东里青年创业团', tag: '返乡创业', desc: '由5名返乡大学生组成的创业团队，利用电商平台推广东里特产，年销售额破千万。' },
-                { name: '林小红', tag: '非遗传承人', desc: '90后剪纸艺术家，致力于将传统剪纸艺术与现代设计结合，作品多次在省市获奖。' }
-            ]
-        },
-    ]
-  }
+
 };
 
 const WeatherWidget = () => {
@@ -111,7 +63,7 @@ const App: React.FC = () => {
 
   // Navigation States
   const [currentView, setCurrentView] = useState<'dashboard' | 'map' | 'detail' | 'media'>('dashboard');
-  const [activeCategory, setActiveCategory] = useState<'red' | 'nature' | 'people'>('red');
+  const [activeCategory, setActiveCategory] = useState<'red' | 'nature'>('red');
   const [selectedSpot, setSelectedSpot] = useState<any | null>(null); 
   const [detailSpot, setDetailSpot] = useState<any | null>(null); 
 
@@ -502,7 +454,7 @@ const App: React.FC = () => {
       }
   };
 
-  const handleCategoryClick = (category: 'red' | 'nature' | 'people') => {
+  const handleCategoryClick = (category: 'red' | 'nature') => {
       setActiveCategory(category);
       setCurrentView('map');
       setSelectedSpot(null); // Reset selection
@@ -575,17 +527,6 @@ const App: React.FC = () => {
                     <i className="fas fa-tree text-6xl text-gray-600"></i>
                 </div>
                  <span className="text-lg font-medium text-gray-600">自然风景</span>
-            </div>
-
-            {/* Celebrities */}
-            <div 
-                onClick={() => handleCategoryClick('people')}
-                className="h-40 bg-gray-300 rounded-3xl relative p-6 flex items-end hover:scale-[1.02] transition-transform cursor-pointer shadow-sm group overflow-hidden"
-            >
-                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <i className="fas fa-user-graduate text-6xl text-gray-600"></i>
-                 </div>
-                 <span className="text-lg font-medium text-gray-600">东里名人</span>
             </div>
 
             {/* Video Self-media */}
@@ -748,12 +689,12 @@ const App: React.FC = () => {
                                 <div 
                                     onClick={() => handleSpotClick(spot)}
                                     className={`
-                                        ${catKey === 'red' ? 'text-red-500' : catKey === 'people' ? 'text-purple-500' : 'text-emerald-500'} 
+                                        ${catKey === 'red' ? 'text-red-500' : 'text-emerald-500'} 
                                         filter drop-shadow-md cursor-pointer hover:scale-125 transition-transform
                                         ${catKey === activeCategory ? 'text-4xl animate-bounce-short' : 'text-2xl opacity-60'}
                                     `}
                                 >
-                                    <i className={`fas ${catKey === 'people' ? 'fa-user' : 'fa-map-marker-alt'}`}></i>
+                                    <i className="fas fa-map-marker-alt"></i>
                                 </div>
                                 {catKey === activeCategory && !isSelected && (
                                     <span className="text-[10px] font-bold bg-white/90 px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap mt-1 pointer-events-none tracking-wide text-gray-600">
@@ -780,12 +721,6 @@ const App: React.FC = () => {
                  >
                      自然风景
                  </button>
-                 <button 
-                    onClick={() => { setActiveCategory('people'); setSelectedSpot(null); }}
-                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all tracking-wide ${activeCategory === 'people' ? 'bg-white shadow text-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
-                 >
-                     东里名人
-                 </button>
              </div>
 
              {/* List Content */}
@@ -797,7 +732,7 @@ const App: React.FC = () => {
                         className="bg-white p-5 rounded-3xl shadow-sm flex items-center gap-5 animate-slide-up cursor-pointer active:bg-gray-50 transition border border-gray-50 hover:border-gray-100"
                      >
                          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${activeData.lightBg} ${activeData.text}`}>
-                             <i className={`fas ${activeCategory === 'red' ? 'fa-star' : activeCategory === 'people' ? 'fa-user-graduate' : 'fa-tree'} text-2xl`}></i>
+                             <i className={`fas ${activeCategory === 'red' ? 'fa-star' : 'fa-tree'} text-2xl`}></i>
                          </div>
                          <div className="flex-1">
                              <h4 className="font-bold text-gray-800 text-lg tracking-tight">{spot.name}</h4>
